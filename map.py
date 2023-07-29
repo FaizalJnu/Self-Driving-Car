@@ -81,7 +81,10 @@ class Car(Widget):
         self.signal1 = int(np.sum(sand[int(self.sensor1_x)-10:int(self.sensor1_x)+10, int(self.sensor1_y)-10:int(self.sensor1_y)+10]))/400.
         self.signal2 = int(np.sum(sand[int(self.sensor2_x)-10:int(self.sensor2_x)+10, int(self.sensor2_y)-10:int(self.sensor2_y)+10]))/400.
         self.signal3 = int(np.sum(sand[int(self.sensor3_x)-10:int(self.sensor3_x)+10, int(self.sensor3_y)-10:int(self.sensor3_y)+10]))/400.
+
+        #punishment signals
         if self.sensor1_x>longueur-10 or self.sensor1_x<10 or self.sensor1_y>largeur-10 or self.sensor1_y<10:
+            #terribly bad report
             self.signal1 = 1.
         if self.sensor2_x>longueur-10 or self.sensor2_x<10 or self.sensor2_y>largeur-10 or self.sensor2_y<10:
             self.signal2 = 1.
@@ -107,7 +110,8 @@ class Game(Widget):
     def serve_car(self):
         self.car.center = self.center
         self.car.velocity = Vector(6, 0)
-
+    
+    #updating the actions in the neural network
     def update(self, dt):
 
         global brain
@@ -127,6 +131,7 @@ class Game(Widget):
         xx = goal_x - self.car.x
         yy = goal_y - self.car.y
         orientation = Vector(*self.car.velocity).angle((xx,yy))/180.
+        #-orientation makes sure that our car explores both the directions
         last_signal = [self.car.signal1, self.car.signal2, self.car.signal3, orientation, -orientation]
         action = brain.update(last_reward, last_signal)
         scores.append(brain.score())
@@ -140,7 +145,7 @@ class Game(Widget):
         if sand[int(self.car.x),int(self.car.y)] > 0:
             self.car.velocity = Vector(1, 0).rotate(self.car.angle)
             last_reward = -1
-        else: # otherwise
+        else:
             self.car.velocity = Vector(6, 0).rotate(self.car.angle)
             last_reward = -0.2
             if distance < last_distance:
