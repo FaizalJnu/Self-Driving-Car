@@ -110,6 +110,10 @@ class Dqn():
     # update function when the ai reaches a new state
     # also will integrate the action function to take 
     # a new action at every update
+    def update(self, reward, new_signal):
+        new_state = torch.Tensor(new_signal).float().unsqueeze(0)
+        self.memory.push((self.last_state, new_state, torch.LongTensor([int(self.last_action)]), torch.))
+        
        
                  
 
