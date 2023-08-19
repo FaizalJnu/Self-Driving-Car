@@ -129,7 +129,23 @@ class Dqn():
             del self.reward_window[0]
         return action
     def score(self):
-          
+        return sum(self.reward_window)/(len(self.reward_window)+1.)
+
+    # to create a save the model
+    def save(self):
+        torch.save({'state_dict': self.model.state_dict(),
+                    'optimizer': self.optimizer.state_dict(),
+                    }, 'last_brain1.pth')
+        
+    def load(self):
+        if os.path.isfile('last_brain1.pth'):
+            print("=> loading checkpoint..")
+            checkpoint = torch.load('last_brain1.pth')
+            self.model.load_state_dict(checkpoint['state_dict'])   
+            self.optimizer.load_state_dict(checkpoint['state_dict'])
+            print("done!")
+        else:
+            print("no checkpoint found..")
         
        
                  
