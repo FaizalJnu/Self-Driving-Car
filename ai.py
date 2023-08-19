@@ -112,7 +112,24 @@ class Dqn():
     # a new action at every update
     def update(self, reward, new_signal):
         new_state = torch.Tensor(new_signal).float().unsqueeze(0)
-        self.memory.push((self.last_state, new_state, torch.LongTensor([int(self.last_action)]), torch.))
+        self.memory.push((self.last_state, new_state, torch.LongTensor([int(self.last_action)]), torch.Tensor([self.last_reward])))
+        # starting all over again now
+        action = self.select_action(new_state)
+        if len(self.memory.memory) > 100:
+            batch_state, batch_next_state, batch_reward, batch_action = self.memory.sample(100)
+            # making learning happen
+            self.learn(batch_state, batch_next_state, batch_reward, batch_action)
+
+        self.last_action = action    
+        self.last_state = new_state
+        self.last_reward = reward
+
+        self.reward_window.append(reward)
+        if len(self.reward_window) > 1000:
+            del self.reward_window[0]
+        return action
+    def score(self):
+          
         
        
                  
