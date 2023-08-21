@@ -81,16 +81,19 @@ class Dqn():
         # generating probabilities of the entities entered
         # the entities will be neural networks we're working
         # with
-        probs = F.softmax(self.model(Variable(state, volatile = True))*7) # t is temp and is equal to 7
+        probs = F.softmax(self.model(Variable(state, volatile = True))*0) # t is temp and is equal to 7
         # softmax{[1,2,3]} = [0.04,0.11,0.85] => softmax{[1,2,3]*3} = [0,0.02,0.98]
         # tempreture parameter is the way we tell which parameter we get to use
-        action = probs.multinomial()
+        action = probs.multinomial(num_samples=1)
         return action.data[0,0]
 
     # training the model in forward and backward propagation
     # basically training the deep learning model
 
     def learn(self, batch_state, batch_next_state, batch_reward, batch_action):
+        
+        #converting to dtype int64
+        batch_action = batch_action.type(torch.int64)
         # creating and killing the fake action using unqueeze and squeeze
         outputs = self.model(batch_state).gather(1, batch_action.unsqueeze(1)).squeeze(1)
         next_outputs = self.model(batch_next_state).detach().max(1)[0]
@@ -104,8 +107,23 @@ class Dqn():
         # of the loop
         self.optimizer.zero_grad()
         #backpropagating
-        td_loss.backward(retain_variables = True)
+        td_loss.backward(retain_graph=True)
+
         self.optimizer.step()
+
+    # def learn(self, batch_state, batch_next_state, batch_reward, batch_action):
+    #     # Convert batch_action to a tensor of type int64
+    #     batch_action = torch.cat(batch_action).long()
+        
+    #     outputs = self.model(batch_state).gather(1, batch_action.unsqueeze(1)).squeeze(1)
+    #     next_outputs = self.model(batch_next_state).detach().max(1)[0]
+    #     target = self.gamma * next_outputs + batch_reward
+    #     td_loss = F.smooth_l1_loss(outputs, target)
+    #     self.optimizer.zero_grad()
+    #     td_loss.backward(retain_graph=True)
+    #     self.optimizer.step()
+
+    
 
     # update function when the ai reaches a new state
     # also will integrate the action function to take 
@@ -150,7 +168,7 @@ class Dqn():
        
                  
 
-
+ 
 
 
             
