@@ -81,7 +81,7 @@ class Dqn():
         # generating probabilities of the entities entered
         # the entities will be neural networks we're working
         # with
-        probs = F.softmax(self.model(Variable(state, volatile = True))*0) # t is temp and is equal to 7
+        probs = F.softmax(self.model(Variable(state, volatile = True))*100) # t is temp and is equal to 7
         # softmax{[1,2,3]} = [0.04,0.11,0.85] => softmax{[1,2,3]*3} = [0,0.02,0.98]
         # tempreture parameter is the way we tell which parameter we get to use
         action = probs.multinomial(num_samples=1)
@@ -91,51 +91,40 @@ class Dqn():
     # basically training the deep learning model
 
     def learn(self, batch_state, batch_next_state, batch_reward, batch_action):
-        
-        #converting to dtype int64
+        # Convert batch_action to a tensor of type int64
         batch_action = batch_action.type(torch.int64)
-        # creating and killing the fake action using unqueeze and squeeze
-        outputs = self.model(batch_state).gather(1, batch_action.unsqueeze(1)).squeeze(1)
-        next_outputs = self.model(batch_next_state).detach().max(1)[0]
-        target = self.gamma*next_outputs + batch_reward
-        # temporal difference loss
-        # also using hoober loss
-        # smooth_ll_loss is the hoober loss and 
-        # is the best loss predictor in DL
-        td_loss = F.smooth_l1_loss(outputs, target)
-        # reinitialize the optimizer at each iteration
-        # of the loop
-        self.optimizer.zero_grad()
-        #backpropagating
-        td_loss.backward(retain_graph=True)
-
-        self.optimizer.step()
-
-    # def learn(self, batch_state, batch_next_state, batch_reward, batch_action):
-    #     # Convert batch_action to a tensor of type int64
-    #     batch_action = torch.cat(batch_action).long()
         
-    #     outputs = self.model(batch_state).gather(1, batch_action.unsqueeze(1)).squeeze(1)
-    #     next_outputs = self.model(batch_next_state).detach().max(1)[0]
-    #     target = self.gamma * next_outputs + batch_reward
-    #     td_loss = F.smooth_l1_loss(outputs, target)
-    #     self.optimizer.zero_grad()
-    #     td_loss.backward(retain_graph=True)
-    #     self.optimizer.step()
+        # Compute the Q-values for the current state and selected actions
+        outputs = self.model(batch_state).gather(1, batch_action.unsqueeze(1)).squeeze(1)
+        
+        # Compute the Q-values for the next state
+        next_outputs = self.model(batch_next_state).detach().max(1)[0]
+        
+        # Compute the target Q-values
+        target = self.gamma * next_outputs + batch_reward
+        
+        # Calculate the loss using smooth L1 loss
+        td_loss = F.smooth_l1_loss(outputs, target)
+        
+        # Zero the gradients, perform backpropagation, and update the model
+        self.optimizer.zero_grad()
 
-    
+        # Calculate the loss using smooth L1 loss
+        td_loss.backward(retain_graph = True)
+        self.optimizer.step()
 
     # update function when the ai reaches a new state
     # also will integrate the action function to take 
     # a new action at every update
     def update(self, reward, new_signal):
         new_state = torch.Tensor(new_signal).float().unsqueeze(0)
-        self.memory.push((self.last_state, new_state, torch.LongTensor([int(self.last_action)]), torch.Tensor([self.last_reward])))
-        # starting all over again now
+        self.memory.push((self.last_state, new_state, torch.LongTensor([int(self.last_action)]),
+                          torch.Tensor([self.last_reward])))
         action = self.select_action(new_state)
+        # starting all over again now
         if len(self.memory.memory) > 100:
-            batch_state, batch_next_state, batch_reward, batch_action = self.memory.sample(100)
-            # making learning happen
+            batch_state, batch_next_state, batch_action, batch_reward = self.memory.sample(100)
+            #make learning happen
             self.learn(batch_state, batch_next_state, batch_reward, batch_action)
 
         self.last_action = action    
@@ -146,6 +135,7 @@ class Dqn():
         if len(self.reward_window) > 1000:
             del self.reward_window[0]
         return action
+    
     def score(self):
         return sum(self.reward_window)/(len(self.reward_window)+1.)
 
