@@ -81,7 +81,7 @@ class Dqn():
         # generating probabilities of the entities entered
         # the entities will be neural networks we're working
         # with
-        probs = F.softmax(self.model(Variable(state, volatile = True))*100) # t is temp and is equal to 7
+        probs = F.softmax(self.model(Variable(state, volatile = True))*75) # t is temp and is equal to 7
         # softmax{[1,2,3]} = [0.04,0.11,0.85] => softmax{[1,2,3]*3} = [0,0.02,0.98]
         # tempreture parameter is the way we tell which parameter we get to use
         action = probs.multinomial(num_samples=1)
@@ -150,7 +150,7 @@ class Dqn():
             print("=> loading checkpoint..")
             checkpoint = torch.load('last_brain1.pth')
             self.model.load_state_dict(checkpoint['state_dict'])   
-            self.optimizer.load_state_dict(checkpoint['state_dict'])
+            self.optimizer.load_state_dict(checkpoint['optimizer'])
             print("done!")
         else:
             print("no checkpoint found..")
