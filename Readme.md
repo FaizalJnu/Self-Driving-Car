@@ -8,7 +8,7 @@
 
 <h2> how to run </h2>
 <p>
-- run the map.py file
+- run the map.py file \n
 - press load once the kivy environment loads in order to load the last_brain.pth.
 - you can create more brain paths by making a change in line 149 of ai.py file before running and then pressing save after you've had the agent maneuver the paths you've set up 
 <p>
