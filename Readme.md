@@ -5,7 +5,7 @@
 </ol>
 
 <h2> to install conda environment with all the required packages </h2>
-<p> Run this command: conda create -n <\env-name\> python=3.9 -f requirements.yaml </p> 
+<p> Run this command: conda create -n <env-name> python=3.9 -f requirements.yaml </p> 
 
 <h2> how to run </h2>
 <ol>
